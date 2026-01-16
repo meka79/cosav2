@@ -1,5 +1,4 @@
 import streamlit as st
-import pandas as pd
 from src.database.operations import (
     get_all_categories, 
     add_category, 
@@ -7,7 +6,8 @@ from src.database.operations import (
     delete_category
 )
 
-def show_categories_page():
+def show():
+    """Kategori yönetimi sayfasını göster."""
     st.title("📂 Kategori Yönetimi")
     
     # --- YENİ KATEGORİ EKLE ---
@@ -84,7 +84,9 @@ def show_categories_page():
                         key=f"type_select_{cat['id']}"
                     )
                     
-                    # --- İŞTE EKSİK OLAN KISIMLAR BURADA ---
+                    # --- YENİ EKLENEN ÖZELLİKLER ---
+                    st.markdown("---")
+                    st.markdown("##### 🔔 Bildirim Ayarları")
                     col_a, col_b = st.columns(2)
                     with col_a:
                         edit_pre_notify = st.number_input(
@@ -96,10 +98,12 @@ def show_categories_page():
                         )
                     with col_b:
                         edit_resource = st.checkbox(
-                            "Kaynak Hatırlatıcı?",
+                            "🎒 Kaynak Hatırlatıcı?",
                             value=bool(cat.get('show_resource_reminder', False)),
                             help="Bildirimde 'Kaynakları hazırlamayı unutma' yazsın mı?"
                         )
+                    st.markdown("---")
+                    # -------------------------------
                     
                     edit_active = st.checkbox("Aktif", value=cat['is_active'])
                     
