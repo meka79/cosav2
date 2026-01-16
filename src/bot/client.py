@@ -1,6 +1,6 @@
 """
 Discord Bot - PostgreSQL destekli, timezone-aware.
-Görünmezlik modu (Invisible) eklendi.
+GHOST MODE: Bot her zaman 'Offline' (Görünmez) görünür.
 """
 
 import os
@@ -76,7 +76,7 @@ async def on_ready():
     
     print("━" * 40)
     print("🐉 War of Dragons - Görev Takipçisi")
-    print("🚀 SÜRÜM: 3.6 - OFFLINE MODLU")
+    print("👻 SÜRÜM: 3.7 - GHOST MODE (Tamamen Görünmez)")
     print("━" * 40)
     print(f"✅ Bot: {bot.user.name}")
     print(f"🗄️ Veritabanı: PostgreSQL")
@@ -99,27 +99,24 @@ async def on_ready():
     if notification_channel:
         print(f"📢 Kanal: #{notification_channel.name}")
     
-    # Botun aktiflik durumunu kontrol et ve ona göre GÖRÜNÜM ayarla
     active = is_bot_active()
-    print(f"🔘 Durum: {'AKTİF' if active else 'DURAKLATILDI'}")
+    print(f"🔘 Mantıksal Durum: {'AKTİF' if active else 'DURAKLATILDI'}")
     
-    if active:
-        # Aktifse Online ol
-        await bot.change_presence(status=discord.Status.online, activity=discord.Game(name="War of Dragons"))
-    else:
-        # Pasifse Invisible (Görünmez) ol
-        await bot.change_presence(status=discord.Status.invisible)
+    # --- GHOST MODE: HER ZAMAN GÖRÜNMEZ OL ---
+    await bot.change_presence(status=discord.Status.invisible)
+    print("🕵️ Bot 'Invisible' (Görünmez) moda alındı.")
     
     print("━" * 40)
     
     setup_scheduler(bot, notification_channel)
     
     if notification_channel:
-        status_text = "🟢 AKTİF (Online)" if active else "🔴 DURAKLATILDI (Gizli Mod)"
+        # Durum mesajı at ama botun kendisi gri kalsın
+        status_text = "🕵️ AKTİF (Gizli Mod)" if active else "💤 DURAKLATILDI"
         await notification_channel.send(
-            f"🐉 **Görev Takipçisi** sisteme giriş yaptı.\n"
+            f"🐉 **Görev Takipçisi** devrede.\n"
             f"Durum: {status_text}\n"
-            f"`!baslat` ile başlat | `!durdur` ile durdur"
+            f"*Not: Bot her zaman çevrimdışı görünecektir.*"
         )
 
 
@@ -131,18 +128,18 @@ async def on_reaction_add(reaction: discord.Reaction, user: discord.User):
 
 
 # =============================================================================
-# BAŞLAT / DURDUR (GÖRÜNÜM AYARLI)
+# BAŞLAT / DURDUR (GHOST MODE)
 # =============================================================================
 
 @bot.command(name="baslat", aliases=["start"])
 async def cmd_baslat(ctx: commands.Context):
-    """Botu başlat ve online yap."""
+    """Botu başlat (Ama görünmez kal)."""
     set_bot_active(True)
     
-    # Botu YEŞİL (Online) yap ve aktivite ekle
-    await bot.change_presence(status=discord.Status.online, activity=discord.Game(name="War of Dragons"))
+    # Botu aktif et ama GÖRÜNMEZ (Invisible) yapmaya zorla
+    await bot.change_presence(status=discord.Status.invisible)
     
-    await ctx.send("🟢 **Bot BAŞLATILDI!** Bildirimler aktif ve çevrimiçiyim.")
+    await ctx.send("🕵️ **Bot BAŞLATILDI!** (Gizli Mod)\nBen çevrimdışı görüneceğim ama arka planda görevleri takip ediyorum.")
     
     all_tasks = get_all_tasks_with_status()
     ready = [t for t in all_tasks if t.get('is_available') or t.get('is_open')]
@@ -171,13 +168,13 @@ async def cmd_baslat(ctx: commands.Context):
 
 @bot.command(name="durdur", aliases=["stop"])
 async def cmd_durdur(ctx: commands.Context):
-    """Botu durdur ve görünmez (offline gibi) yap."""
+    """Botu durdur (Zaten görünmez)."""
     set_bot_active(False)
     
-    # Botu GRİ (Invisible/Offline görünümlü) yap
+    # Zaten görünmez ama garanti olsun
     await bot.change_presence(status=discord.Status.invisible)
     
-    await ctx.send("🔴 **Bot DURAKLATILDI!** Arka planda takip devam ediyor ama ben uyuyorum. 💤\n`!baslat` yazarsan uyanırım.")
+    await ctx.send("💤 **Bot DURAKLATILDI!**\nTakip durdu. `!baslat` yazana kadar bildirim gelmeyecek.")
 
 
 # =============================================================================
@@ -506,8 +503,6 @@ async def cmd_reset_db(ctx):
         await ctx.send(f"❌ **Hata:** {e}")
         import traceback
         traceback.print_exc()
-
-
 
 
 def run_bot():
