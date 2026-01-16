@@ -1,5 +1,6 @@
 """
 Discord Bot - PostgreSQL destekli, timezone-aware.
+Görünmezlik modu (Invisible) eklendi.
 """
 
 import os
@@ -75,7 +76,7 @@ async def on_ready():
     
     print("━" * 40)
     print("🐉 War of Dragons - Görev Takipçisi")
-    print("🚀 SÜRÜM: 3.5 - VERITABANI SIFIRLAMA MODU")
+    print("🚀 SÜRÜM: 3.6 - OFFLINE MODLU")
     print("━" * 40)
     print(f"✅ Bot: {bot.user.name}")
     print(f"🗄️ Veritabanı: PostgreSQL")
@@ -98,17 +99,26 @@ async def on_ready():
     if notification_channel:
         print(f"📢 Kanal: #{notification_channel.name}")
     
+    # Botun aktiflik durumunu kontrol et ve ona göre GÖRÜNÜM ayarla
     active = is_bot_active()
     print(f"🔘 Durum: {'AKTİF' if active else 'DURAKLATILDI'}")
+    
+    if active:
+        # Aktifse Online ol
+        await bot.change_presence(status=discord.Status.online, activity=discord.Game(name="War of Dragons"))
+    else:
+        # Pasifse Invisible (Görünmez) ol
+        await bot.change_presence(status=discord.Status.invisible)
+    
     print("━" * 40)
     
     setup_scheduler(bot, notification_channel)
     
     if notification_channel:
-        status = "🟢 AKTİF" if active else "🔴 DURAKLATILDI"
+        status_text = "🟢 AKTİF (Online)" if active else "🔴 DURAKLATILDI (Gizli Mod)"
         await notification_channel.send(
-            f"🐉 **Görev Takipçisi** çevrimiçi!\n"
-            f"Durum: {status}\n"
+            f"🐉 **Görev Takipçisi** sisteme giriş yaptı.\n"
+            f"Durum: {status_text}\n"
             f"`!baslat` ile başlat | `!durdur` ile durdur"
         )
 
@@ -121,15 +131,18 @@ async def on_reaction_add(reaction: discord.Reaction, user: discord.User):
 
 
 # =============================================================================
-# BAŞLAT / DURDUR
+# BAŞLAT / DURDUR (GÖRÜNÜM AYARLI)
 # =============================================================================
 
 @bot.command(name="baslat", aliases=["start"])
 async def cmd_baslat(ctx: commands.Context):
-    """Botu başlat."""
+    """Botu başlat ve online yap."""
     set_bot_active(True)
     
-    await ctx.send("🟢 **Bot BAŞLATILDI!** Bildirimler aktif.")
+    # Botu YEŞİL (Online) yap ve aktivite ekle
+    await bot.change_presence(status=discord.Status.online, activity=discord.Game(name="War of Dragons"))
+    
+    await ctx.send("🟢 **Bot BAŞLATILDI!** Bildirimler aktif ve çevrimiçiyim.")
     
     all_tasks = get_all_tasks_with_status()
     ready = [t for t in all_tasks if t.get('is_available') or t.get('is_open')]
@@ -158,9 +171,13 @@ async def cmd_baslat(ctx: commands.Context):
 
 @bot.command(name="durdur", aliases=["stop"])
 async def cmd_durdur(ctx: commands.Context):
-    """Botu durdur."""
+    """Botu durdur ve görünmez (offline gibi) yap."""
     set_bot_active(False)
-    await ctx.send("🔴 **Bot DURAKLATILDI!** `!baslat` ile devam et.")
+    
+    # Botu GRİ (Invisible/Offline görünümlü) yap
+    await bot.change_presence(status=discord.Status.invisible)
+    
+    await ctx.send("🔴 **Bot DURAKLATILDI!** Arka planda takip devam ediyor ama ben uyuyorum. 💤\n`!baslat` yazarsan uyanırım.")
 
 
 # =============================================================================
